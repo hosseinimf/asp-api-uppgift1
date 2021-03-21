@@ -1,0 +1,73 @@
+﻿@page "/customerlist"
+<Auth />
+
+
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService storageService
+
+<h1>Customers</h1>
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (customers == null)
+{
+    <p><em>.......</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer Full name</th>
+                <th>Customer Id</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in customers)
+            {
+            <tr>
+                <td>@customer.FirstName @customer.LastName</td>
+                <td>@customer.Id</td>
+                <td>@customer.Email</td>
+
+                <RadzenButton Text="Add issue" ButtonStyle="Radzen.ButtonStyle.Secondary" Click="@(() => GoToCustomerIssue(customer.Id, customer.FullName))" />
+                <RadzenButton Text="Edit" ButtonStyle="Radzen.ButtonStyle.Secondary" />
+                <RadzenButton Text="Delete" ButtonStyle="Radzen.ButtonStyle.Secondary" />
+
+
+            </tr>
+                
+            }
+        </tbody>
+    </table>
+
+}
+
+
+    @code {
+        private IEnumerable<CustomerResponseModel> customers;
+
+
+        protected override async Task OnInitializedAsync()
+        {
+            customers = await authService.GetAllCustomersAsync("https://localhost:44318/api/customers");
+        }
+
+        private string result { get; set; }
+
+
+
+        public void GoToCustomerIssue(int customerId, string name)
+        {
+            NavManager.NavigateTo($"/customerissue/{customerId}/{name}");
+        }
+
+
+
+
+
+
+
+
+
+    }

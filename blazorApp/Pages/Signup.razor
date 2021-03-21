@@ -1,0 +1,77 @@
+﻿@page "/signup"
+
+@inject AuthenticationService authService
+
+
+<h3>Signup</h3>
+
+<div class="row">
+
+<EditForm Model="model" OnValidSubmit="SignupUser">
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="inputEmail4">First name</label>
+            <input @bind-value="model.FirstName" type="text" class="form-control" id="inputEmail4" placeholder="First name">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="inputEmail4">Last name</label>
+            <input @bind-value="model.LastName" type="text" class="form-control" id="inputEmail4" placeholder="Last name">
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <label for="inputAddress">Email</label>
+        <input @bind-value="model.Email" type="email" class="form-control" id="inputAddress" placeholder="Email">
+    </div>
+
+
+    <div class="form-row">
+
+        <div class="form-group col-md-6">
+            <label for="inputPassword4">Password</label>
+            <input @bind-value="model.Password" type="password" class="form-control" id="inputPassword4" placeholder="Password">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Register</button>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <p1>@message</p1>
+    }
+
+
+</EditForm>
+
+</div>
+
+
+
+
+
+
+
+
+@code {
+    SignUpModel model = new SignUpModel();
+    AuthenticationService service = new AuthenticationService("https://localhost:44318");
+
+    string message = string.Empty;
+
+    public async Task SignupUser()
+    {
+        var result = await authService.SignupUserAsync(model);
+
+        if (result.Succeeded)
+        {
+            message = result.Message;
+        }
+        else
+        {
+            message = result.Message;
+        }
+
+    }
+}

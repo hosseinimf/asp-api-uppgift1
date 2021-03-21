@@ -1,0 +1,90 @@
+﻿@page "/issue"
+<Auth />
+@inject AuthenticationService authService
+
+<h3>Issue</h3>
+
+
+<div class="row">
+
+    <EditForm Model="model" OnValidSubmit="CreateIssueRazor">
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputEmail4">Title</label>
+                <input @bind-value="model.Title" type="text" class="form-control" id="inputEmail4" placeholder="First name">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="inputEmail4">Description</label>
+                <input @bind-value="model.Description" type="text" class="form-control" id="inputEmail4" placeholder="Last name">
+            </div>
+        </div>
+
+
+        @*<div class="form-group">
+            <label for="inputAddress">Customer Id</label>
+            <input @bind-value="model.CustomerId" type="text" class="form-control" id="inputAddress" placeholder="Email">
+        </div>*@
+
+        <button type="submit" class="btn btn-success">Create Issue</button>
+
+
+
+        <InputSelect @bind-Value="@model.CustomerId">
+
+            @if (customerList != null)
+            {
+                @foreach (var customer in customerList)
+                {
+                    <option value="@customer.Id">@customer.FullName</option>
+                }
+            }
+            else
+            {
+                 <p>error from inputSelect</p>
+            }
+        </InputSelect>
+    </EditForm>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <p1>@message</p1>
+    }
+</div>
+
+
+
+@code {
+    CreateIssueModel model = new CreateIssueModel();
+    private IEnumerable<CustomerResponseModel> customerList;
+
+    string message = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //custModel = await authService.GetAllCustomersAsync("https://localhost:44318/api/customers", await sessionStorage.GetItemAsync<string>("auth"));
+        customerList = await authService.GetAllCustomersAsync("https://localhost:44318/api/customers");
+    }
+
+
+
+    public async Task CreateIssueRazor()
+    {
+        var result = await authService.CreateIssueRazorAsync(model);
+
+        if (result.Succeeded)
+        {
+            message = result.Message + result.Email + result.CustomerId;
+        }
+        else
+        {
+            message = result.Message;
+        }
+
+    }
+
+
+
+
+}

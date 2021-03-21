@@ -1,0 +1,86 @@
+﻿@page "/editissue/{issueId:int}/{issueTitle}/{customerId:int}/{name}/{issueDescription}"
+
+<Auth />
+
+<h3>EditIssue</h3>
+
+<EditForm Model="issueModel" OnValidSubmit="EditCurrentIssue">
+
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Title</label>
+            <input @bind-value="issueModel.Title" type="text" class="form-control" placeholder="New title">
+        </div>
+        <div class="form-group col-md-6">
+            <label>Description</label>
+            <input @bind-value="issueModel.Description" type="text" class="form-control" placeholder="New Description">
+        </div>
+    </div>
+
+
+
+    <button type="submit" class="btn btn-success">Save</button>
+
+
+
+    <InputSelect @bind-Value="@issueModel.Status">
+        <option value="@Status.Inactive">Inactive</option>
+        <option value="@Status.Started">Started</option>
+        <option value="@Status.Completed">Completed</option>
+    </InputSelect>
+</EditForm>
+
+
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public int IssueId { get; set; }
+    [Parameter]
+    public string IssueTitle { get; set; }
+    [Parameter]
+    public int CustomerId { get; set; }
+    [Parameter]
+    public string Name { get; set; }
+    [Parameter]
+    public string IssueDescription { get; set; }
+
+    private string editMessage;
+
+    protected override void OnParametersSet()
+    {
+        var issueId = IssueId;
+        var issueTitle = IssueTitle;
+        var customerId = CustomerId;
+        var name = Name;
+        var issueDescription = IssueDescription;
+    }
+
+
+    public CreateIssueModel issueModel = new CreateIssueModel();
+    private async Task EditCurrentIssue()
+    {
+        var result = await authService.EditIssueRazorAsync(issueModel, IssueId);
+
+        if (result.Succeeded)
+        {
+            editMessage = result.Message + result.Email + result.CustomerId;
+        }
+        else
+        {
+            editMessage = result.Message;
+        }
+    }
+
+
+
+
+
+
+
+    //----------------------------------------
+}

@@ -1,0 +1,50 @@
+﻿@page "/users"
+<Auth />
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService storageService
+
+<h1>Users</h1>
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (users == null)
+{
+    <p><em>.......</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.FirstName @user.LastName / @user.Email</td>              
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+
+
+@code {
+    private IEnumerable<UserResponse> users;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        //users = await Http.GetFromJsonAsync<IEnumerable<UserResponse>>("https://localhost:44318/api/users");
+
+        users = await authService.GetAllUsersAsync("https://localhost:44318/api/users", await sessionStorage.GetItemAsync<string>("auth"));
+    }
+
+
+
+
+}

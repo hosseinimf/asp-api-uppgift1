@@ -1,0 +1,211 @@
+﻿@page "/customerissue/{customerId:int}/{name}"
+
+<Auth />
+
+
+<div>
+    Customer Id: @CustomerId  / Customer Fullname: @name
+</div>
+
+
+<EditForm Model="model" OnValidSubmit="CreateIssueRazor">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Title</label>
+            <input @bind-value="model.Title" type="text" class="form-control" placeholder="Title">
+        </div>
+        <div class="form-group col-md-6">
+            <label>Description</label>
+            <input @bind-value="model.Description" type="text" class="form-control" placeholder="Description">
+        </div>
+
+        <div class="form-group col-md-3">
+            <label>Status</label>
+            <InputSelect @bind-Value="@model.Status">
+                <option value="@Status.Inactive">Inactive</option>
+                <option value="@Status.Started">Started</option>
+                <option value="@Status.Completed">Completed</option>
+            </InputSelect>
+        </div>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Create Issue</button>
+</EditForm>
+<br />
+<RadzenButton Text="Back To Customers" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => BackTo())" />
+
+
+<br />
+<br />
+<h1>Issues of the customer: @name</h1>
+@if (issuesOfCustomer == null)
+{
+    <p><em>.......</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Issue title</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var issue in issuesOfCustomer)
+            {
+            <tr>
+                <td>@issue.Title</td>
+                <td>@issue.Description </td>
+                <td>@issue.Status</td>
+                <RadzenButton Text="Add Comment" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => GoToIssueComment(issue.Id, issue.Title, issue.CustomerId, name))" />
+                <RadzenButton Style="margin:5px" Text="Edit" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => GoToEditIssue(issue.Id, issue.Title, issue.CustomerId, name, issue.Description))" />
+
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+<br />
+
+    <RadzenButton Text="Completed Issues" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => ShowCompletedIssuesAsync(CustomerId))" />
+    <RadzenButton Text="Inactive Issues" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => ShowInactiveIssuesAsync(CustomerId))" />
+    <RadzenButton Text="Started  Issues" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => ShowStartedIssuesAsync(CustomerId))" />
+
+       
+
+<br />
+<br />
+
+<h2>@issueStatus</h2>
+@if (completedIssues == null)
+{
+    <p><em>.......</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Issue title</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var issue in completedIssues)
+            {
+                <tr>
+                    <td>@issue.Title</td>
+                    <td>@issue.Description </td>
+                    <td>@issue.Status</td>
+                    <RadzenButton Text="Add Comment" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => GoToIssueComment(issue.Id, issue.Title, issue.CustomerId, name))" />
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public int CustomerId { get; set; }
+    [Parameter]
+    public string name { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        var test = CustomerId;
+        var test2 = name;
+    }
+
+
+    CreateIssueModel model = new CreateIssueModel();
+    string message = string.Empty;
+    public async Task CreateIssueRazor()
+    {
+        model.CustomerId = CustomerId;
+        var result = await authService.CreateIssueRazorAsync(model);
+
+        if (result.Succeeded)
+        {
+            message = result.Message + result.Email + result.CustomerId;
+        }
+        else
+        {
+            message = result.Message;
+        }
+    }
+
+
+    private IEnumerable<CreateIssueModel> issuesOfCustomer;
+    private IEnumerable<CreateIssueModel> completedIssues;
+    private string issueStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        issuesOfCustomer = await authService.GetAllIssuesAsync("https://localhost:44318/api/issues", CustomerId);
+
+    }
+
+    public async Task ShowCompletedIssuesAsync(int customerId)
+    {
+        completedIssues = await authService.GetAllIssuesAsync("https://localhost:44318/api/issues/completed", customerId);
+        issueStatus = "Completed Issues";
+    }
+    public async Task ShowInactiveIssuesAsync(int customerId)
+    {
+        completedIssues = await authService.GetAllIssuesAsync("https://localhost:44318/api/issues/inactive", customerId);
+        issueStatus = "Inactive Issues";
+    }
+    public async Task ShowStartedIssuesAsync(int customerId)
+    {
+        completedIssues = await authService.GetAllIssuesAsync("https://localhost:44318/api/issues/started", customerId);
+        issueStatus = "Started Issues";
+    }
+
+
+
+    List<CreateIssueModel> customers { get; set; }
+    CreateIssueModel SelectedIssue { get; set; }
+    public void GoToIssueComment(int issueId, string issueTitle, int customerId, string name)
+    {
+        NavManager.NavigateTo($"/issuecomment/{issueId}/{issueTitle}/{customerId}/{name}");
+    }
+
+
+    public void GoToEditIssue(int issueId, string issueTitle, int customerId, string name, string issueDescription)
+    {
+        NavManager.NavigateTo($"/editissue/{issueId}/{issueTitle}/{customerId}/{name}/{issueDescription}");
+    }
+
+
+    CreateCommentModel commentModel = new CreateCommentModel();
+    public async Task CreateCommentRazor(int id)
+    {
+        commentModel.IssueId = id;
+
+        var result = await authService.CreateCommentRazorAsync(commentModel);
+        if (result.Succeeded)
+        {
+
+        }
+    }
+
+
+    public void BackTo()
+    {
+        NavManager.NavigateTo($"/customerlist");
+    }
+
+
+
+
+
+}

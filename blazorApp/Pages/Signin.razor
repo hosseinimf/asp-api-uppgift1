@@ -1,0 +1,101 @@
+﻿@page "/signin"
+
+@inject AuthenticationService authService
+@inject ILocalStorageService storageService
+@inject ISessionStorageService sessionService
+
+
+
+
+
+<h3>Signin to your account</h3>
+
+<div class="row">
+
+    <EditForm Model="model" OnValidSubmit="SigninUser">
+
+        
+
+        <div class="form-group">
+            <label >Email</label>
+            <input @bind-value="model.Email" type="email" class="form-control"  placeholder="Email">
+        </div>
+
+
+        <div class="form-row">
+
+            <div class="form-group col-md-6">
+                <label >Password</label>
+                <input @bind-value="model.Password" type="password" class="form-control"  placeholder="Password">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Signin</button>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <p1>@message</p1>
+        }
+
+
+    </EditForm>
+
+</div>
+
+
+
+
+@code {
+    SignInModel model = new SignInModel();
+    private string token { get; set; }
+
+    AuthenticationService service = new AuthenticationService("https://localhost:44318");
+
+    string message = string.Empty;
+
+
+
+
+    public async Task SigninUser()
+    {
+
+        var response = await Http.PostAsJsonAsync<SignInModel>("https://localhost:44318/api/users/signin", model);
+
+        //await storageService.SetItemAsync<string>("auth", await response.Content.ReadAsStringAsync());
+
+        var signinResponse = await response.Content.ReadFromJsonAsync<SignInResponse>();
+
+        await sessionService.SetItemAsync<string>("auth", signinResponse.Result.AccessToken);
+
+        NavManager.NavigateTo("/");
+
+
+
+
+
+
+
+
+
+        //if (response)
+        //{
+        //    message = result.Result.AccessToken;
+
+
+        //}
+        //else
+        //{
+        //    message = "errorrrrr";
+        //}
+
+        //var result = await authService.SigninUserAsync(model);
+
+        //var userInfo = new blazorApp.Data.LocalUserInfo()
+        //{
+        //    AccessToken = result.Result.AccessToken,
+        //    Email = result.Result.Email,
+        //    Id = result.Result.Id.ToString()
+        //};            
+        //await storageService.SetItemAsync("User", userInfo);
+    }
+}

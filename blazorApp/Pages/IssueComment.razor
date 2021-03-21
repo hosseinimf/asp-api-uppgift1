@@ -1,0 +1,115 @@
+﻿@page "/issuecomment/{issueId:int}/{issueTitle}/{customerId:int}/{name}"
+
+<Auth />
+
+<h3>Comments</h3>
+<br />
+<p>Customer: @Name / @CustomerId</p>
+<p>Issue title: @IssueTitle</p>
+
+
+<EditForm Model="commentModel" OnValidSubmit="CreateCommentRazor">
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Description</label>
+            <input @bind-value="commentModel.Description" type="text" class="form-control" placeholder="Write your comment">
+        </div>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Create Comment</button>
+</EditForm>
+<br />
+
+<RadzenButton Text="Back To Issues" ButtonStyle="Radzen.ButtonStyle.Success" Click="(() => BackTo(CustomerId, Name))" />
+
+
+<br />
+<br />
+<p>All comments of the issue @IssueTitle for customer: @Name</p>
+@if (commentsOfIssue == null)
+{
+    <p><em>.......</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Comments</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var comment in commentsOfIssue)
+            {
+                <tr>
+                    <td>@comment.Description </td>
+                    <td>@comment.Created</td>
+                </tr>
+            }
+        </tbody>
+
+
+    </table>
+}
+
+
+
+
+
+
+
+@code {
+
+    private IEnumerable<CreateCommentModel> commentsOfIssue;
+    protected override async Task OnInitializedAsync()
+    {
+        commentsOfIssue = await authService.GetAllCommentsAsync("https://localhost:44318/api/comments", IssueId);
+    }
+
+
+
+    [Parameter]
+    public int IssueId { get; set; }
+    [Parameter]
+    public string IssueTitle { get; set; }
+    [Parameter]
+    public int CustomerId { get; set; }
+    [Parameter]
+    public string Name { get; set; }
+
+
+    protected override void OnParametersSet()
+    {
+        var issueId = IssueId;
+        var issueTitle = IssueTitle;
+        var customerId = CustomerId;
+        var name = Name;
+    }
+
+
+    CreateCommentModel commentModel = new CreateCommentModel();
+    public async Task CreateCommentRazor()
+    {
+        commentModel.IssueId = IssueId;
+        var result = await authService.CreateCommentRazorAsync(commentModel);
+
+        if (result.Succeeded)
+        {
+
+        }
+    }
+
+
+
+    public void BackTo(int customerId, string name)
+    {
+        NavManager.NavigateTo($"/customerissue/{customerId}/{name}");
+    }
+
+
+
+
+
+    //-----------------------------------------------------------
+}

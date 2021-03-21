@@ -1,0 +1,21 @@
+﻿
+
+
+
+
+@code {
+        private string accessToken { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            accessToken = await sessionStorage.GetItemAsync<string>("auth");
+        }
+        catch { }
+
+        if (string.IsNullOrWhiteSpace(accessToken))
+            NavManager.NavigateTo("/signin");
+    }
+
+}
